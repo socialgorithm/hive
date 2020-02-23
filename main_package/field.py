@@ -1,5 +1,7 @@
 from enum import Enum
 import logging
+from typing import Tuple
+
 import main_package.fieldEntities.ant as ant
 import main_package.fieldEntities.food as food
 import main_package.fieldEntities.base as base
@@ -22,6 +24,9 @@ class Field:
         self.ypos = ypos
         self.type = FieldTypeEnum.EMPTY
         self.entity = None
+
+    def getPos(self) -> Tuple[int, int]:
+        return self.xpos, self.ypos
 
     def resetToEmpty(self):
         self.type = FieldTypeEnum.EMPTY

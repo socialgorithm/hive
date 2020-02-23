@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple, List, Set
 from main_package.fieldEntities.ant import Ant
 from main_package.field import *
 from main_package.fieldEntities.base import Base
@@ -23,8 +23,22 @@ class gameBoard:
         self.gameBoard = [[Field(xpos=x, ypos=y) for x in range(xdim)] for y in range(ydim)]
         self.ants: dict[str, Ant] = {}
         self.playerBases = {}
+        self.players = []
 
+    def getVisibleFields(self, playerName) -> List[Field] or None:
+        if playerName not in self.players:
+            self.log.error("Player {} is not a valid player".format(playerName))
+            return None
 
+        visibleFields: List[Field] = []
+        for antId in self.getAntIdsOfPlayer(playerName):
+            ant = self.getAnt(antId)
+            visibleFields += self.getNeighbouringFields(ant.fieldPosition)
+            visibleFields.append(ant.fieldPosition)
+        base: Base = self.getBase(playerName)
+        visibleFields += self.getNeighbouringFields(base.fieldPosition)
+        visibleFields.append(base.fieldPosition)
+        return list(set(visibleFields))
 
     def createBase(self, xpos: int, ypos: int, player: str) -> bool:
         # the base cannot be right at the board edge or outside the board
@@ -47,6 +61,7 @@ class gameBoard:
         base = Base(player)
         field.setEntity(base)
         self.playerBases[player] = base
+        self.players.append(player)
         self.log.info("base for player {} created at coordinates ({},{})".format(player,xpos,ypos))
         return True
 
@@ -88,7 +103,10 @@ class gameBoard:
                 neighbours.append(neighbour)
         return neighbours
 
-    def getAntIdsOfPlayer(self, playerName: str) -> List[str]:
+    def getAntIdsOfPlayer(self, playerName: str) -> List[str] or None:
+        if playerName not in self.players:
+            self.log.error("Player {} is not a valid player".format(playerName))
+            return None
         playersAnts = list(filter(lambda ant: ant.playerName == playerName, self.ants.values()))
         return list(map(lambda ant: ant.antId, playersAnts))
 

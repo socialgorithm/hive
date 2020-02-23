@@ -28,7 +28,7 @@ class Server:
         # check if player has valid token
         if playerName not in self.registeredPlayers:
             response = {'action': Actions.ERROR_INVALID_PLAYER, 'data': {}, 'token': None}
-            self.outputToPlayer(playerName,response)
+            self.outputToPlayer(playerName, response)
             return
         elif action['token'] != self.registeredPlayers[playerName]:
             response = {'action': Actions.ERROR_INVALID_TOKEN, 'data': {}, 'token': None}
@@ -40,8 +40,6 @@ class Server:
             response = {'action': Actions.GAME_STATE, 'data': {}, 'token': None}
             self.outputToPlayer(playerName,response)
             return
-
-
 
     def outputToPlayer(self, playerName: str, boardStateJson: json):
         pass

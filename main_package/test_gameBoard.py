@@ -1,13 +1,48 @@
+from typing import List
 from unittest import TestCase
 
 from main_package.fieldEntities.base import Base
 from main_package.gameBoard import gameBoard
 from main_package.fieldEntities.ant import Ant
-from main_package.field import FieldTypeEnum
+from main_package.field import FieldTypeEnum, Field
 from main_package.fieldEntities.food import Food
 
 
 class TestgameBoard(TestCase):
+
+    def test_fogOfWar(self):
+        # setup
+        board = gameBoard(6, 6)
+        board.createBase(1,1,"player1")
+        board.createBase(4,4,"player2")
+        board.createAnt(2,1,"a","player1")
+        board.createAnt(3,4,"b","player2")
+
+        # test that invalid player name yields None
+        self.assertTrue(board.getVisibleFields("invalid") is None)
+
+        # check p1 visible fields
+        visibleFieldsP1: List[Field] = board.getVisibleFields("player1")
+        expectedVisibleFieldsP1 = [(x, y) for x in range(0, 4) for y in range(0, 3)]
+        self.assertTrue(all(visible.getPos() in expectedVisibleFieldsP1 for visible in visibleFieldsP1))
+        self.assertTrue(len(visibleFieldsP1) == len(expectedVisibleFieldsP1))
+
+        # check p2 visible fields
+        visibleFieldsP2: List[Field] = board.getVisibleFields("player2")
+        expectedVisibleFieldsP2 = [(x, y) for x in range(2, 6) for y in range(3, 6)]
+        self.assertTrue(all(visible.getPos() in expectedVisibleFieldsP2 for visible in visibleFieldsP2))
+        self.assertTrue(len(visibleFieldsP1) == len(expectedVisibleFieldsP1))
+
+        # move ant and check that visible fields correctly updates
+        board.moveAnt("b", 3, 3)
+        board.moveAnt("b", 3, 2)
+        visibleFieldsP2: List[Field] = board.getVisibleFields("player2")
+        expectedVisibleFieldsP2 = list(set([(x, y) for x in range(2, 5) for y in range(1, 4)] + [(x, y) for x in range(3, 6) for y in range(3, 6)]))
+        self.assertTrue(all(visible.getPos() in expectedVisibleFieldsP2 for visible in visibleFieldsP2))
+        self.assertTrue(len(visibleFieldsP2) == len(expectedVisibleFieldsP2))
+        visibleFieldsP1: List[Field] = board.getVisibleFields("player1")
+        expectedVisibleFieldsP1 = [(x, y) for x in range(0, 5) for y in range(0, 3)]  # player 1 visibility unchanged
+        self.assertTrue(all(visible.getPos() in expectedVisibleFieldsP1 for visible in visibleFieldsP1))
 
     def test_ant_creation(self):
         board = gameBoard(10, 10)
@@ -150,3 +185,6 @@ class TestgameBoard(TestCase):
         self.assertTrue(all(elem in board.getAntIdsOfPlayer("player2") for elem in ["b1", "b2"]))
         self.assertTrue(not any(elem in board.getAntIdsOfPlayer("player2") for elem in ["a1", "a2", "a3"]))
         self.assertTrue(not any(elem in board.getAntIdsOfPlayer("player1") for elem in ["b1", "b2"]))
+
+        # test that method call with invalid player name yields None
+        self.assertTrue(board.getAntIdsOfPlayer("invalid") is None)
