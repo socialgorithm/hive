@@ -136,3 +136,17 @@ class TestgameBoard(TestCase):
         self.assertFalse(board.feed("C", 0, 3))  # food source empty
         self.assertTrue(antC.currentFood == 5)
         self.assertTrue(board.getField(0, 3).type == FieldTypeEnum.EMPTY)  # check food source depleation
+
+    def test_getAntIdsOfPlayer(self):
+        board = gameBoard(5, 5)
+        board.createBase(1, 1, "player1")
+        board.createAnt(0, 1, "a1", "player1")
+        board.createAnt(0, 0, "a2", "player1")
+        board.createAnt(0, 2, "a3", "player1")
+        board.createBase(3, 3, "player2")
+        board.createAnt(4, 3, "b1", "player2")
+        board.createAnt(2, 3, "b2", "player2")
+        self.assertTrue(all(elem in board.getAntIdsOfPlayer("player1") for elem in ["a1", "a2", "a3"]))
+        self.assertTrue(all(elem in board.getAntIdsOfPlayer("player2") for elem in ["b1", "b2"]))
+        self.assertTrue(not any(elem in board.getAntIdsOfPlayer("player2") for elem in ["a1", "a2", "a3"]))
+        self.assertTrue(not any(elem in board.getAntIdsOfPlayer("player1") for elem in ["b1", "b2"]))

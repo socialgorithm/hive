@@ -88,6 +88,10 @@ class gameBoard:
                 neighbours.append(neighbour)
         return neighbours
 
+    def getAntIdsOfPlayer(self, playerName: str) -> List[str]:
+        playersAnts = list(filter(lambda ant: ant.playerName == playerName, self.ants.values()))
+        return list(map(lambda ant: ant.antId, playersAnts))
+
     def createAnt(self, xpos: int, ypos: int, antId: str, player: str) -> bool:
 
         # TODO player can only create ants in sections visible to them
@@ -119,7 +123,7 @@ class gameBoard:
             return False
 
         # set field to ant
-        self.ants[antId] = Ant(antId)
+        self.ants[antId] = Ant(antId, player)
         placementDesitnation.setEntity(self.ants[antId])
         self.log.info("Ant with id {} created at position ({},{})"
                       .format(antId, placementDesitnation.xpos, placementDesitnation.ypos))

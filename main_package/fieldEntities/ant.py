@@ -5,9 +5,10 @@ from main_package.interfaces.attackable import Attackable
 
 class Ant(Attackable):
 
-    def __init__(self, antId: str):
-        Attackable.__init__(self,100)
+    def __init__(self, antId: str, playerName: str):
+        Attackable.__init__(self, 100)
         self.antId: str = antId
+        self.playerName = playerName
         self._maxFoodCapacity: int = 6  # how much food the ant can carry
         self.currentFood: int = 0 # how much the anti is currently carrying
         self.attackDamage: int = 1  # the damage the ant inflicts per attack
