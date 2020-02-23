@@ -1,4 +1,6 @@
 from unittest import TestCase
+
+from main_package.fieldEntities.base import Base
 from main_package.gameBoard import gameBoard
 from main_package.fieldEntities.ant import Ant
 from main_package.field import FieldTypeEnum
@@ -67,19 +69,39 @@ class TestgameBoard(TestCase):
         self.assertFalse(board.attack("A", -1, 0))  # attacking field outside of board
         self.assertFalse(board.attack("A", 0, 0))  # cant self harm
         print(board.getBoardString())
+
         # testing killing of another ant
         antA: Ant = board.getAnt("A")
         antA.attackDamage = 5
-        antC: Ant = board.getAnt("B")
-        antC.health = 10
+        antB: Ant = board.getAnt("B")
+        antBField = antB.fieldPosition
+        self.assertTrue(antBField.type == FieldTypeEnum.ANT)
+        antB.health = 10
         self.assertTrue(board.attack("A", 0, 1))
-        self.assertTrue(antC.health == 5)
+        self.assertTrue(antB.health == 5)
         board.tick()
+        self.assertTrue(antBField.type == FieldTypeEnum.ANT)
         self.assertTrue(board.getAnt("B") is not None)  # ant C damaged but alive
         self.assertTrue(board.attack("A", 0, 1))
-        self.assertTrue(antC.health == 0)
+        self.assertTrue(antB.health == 0)
         board.tick()
+        self.assertTrue(antBField.type == FieldTypeEnum.EMPTY)
         self.assertTrue(board.getAnt("B") is None)  # dead ants removed from board
+
+        # test attacking and killing base
+        base: Base = board.getBase("testPlayer")
+        baseField = base.fieldPosition
+        self.assertTrue(baseField.type == FieldTypeEnum.BASE)
+        base.health = 10
+        self.assertTrue(board.attack("A", 1, 1))
+        board.tick()
+        self.assertTrue(base.health == 5)
+        self.assertTrue(board.attack("A", 1, 1))
+        board.tick()
+        self.assertTrue(baseField.type == FieldTypeEnum.EMPTY)
+        self.assertTrue(board.getBase("testPlayer") is None)
+        base.health = 0
+
 
     def test_ant_feed(self):
         board = gameBoard(5, 5)

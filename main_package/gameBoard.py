@@ -3,12 +3,14 @@ from main_package.fieldEntities.ant import Ant
 from main_package.field import *
 from main_package.fieldEntities.base import Base
 from main_package.fieldEntities.food import Food
+from main_package.interfaces.attackable import Attackable
+
 logging.basicConfig(level=logging.INFO)
 
 
 class gameBoard:
     log = logging.getLogger(__name__)
-    validForAttack = [FieldTypeEnum.ANT]  # FieldTypeEnum.BASE maybe later
+    validForAttack = [FieldTypeEnum.ANT, FieldTypeEnum.BASE]
 
     def __init__(self, xdim: int = 10, ydim: int = 10):
         """
@@ -168,17 +170,29 @@ class gameBoard:
         if fieldToAttack.type not in gameBoard.validForAttack:
             self.log.error("The field {} is not a valid attack target for ant {}".format((xpos, ypos), antId))
             return False
-        victimAnt: Ant = fieldToAttack.entity  # TODO: might need "attackable" interface later
-        attackingAnt.doAttack(victimAnt)
+        target: Attackable = fieldToAttack.entity  # TODO: might need "attackable" interface later
+        attackingAnt.doAttack(target)
         return True
 
     def tick(self):
         """ tick checks status of all ants ant takes required actions accordingly (e.g remove ants with health < 1)"""
         antsToRemove: [str] = []
         for (antId, entity) in self.ants.items():
-            if not entity.evaluateStatus(): antsToRemove.append(antId)
+            if entity.isDead(): antsToRemove.append(antId)
         for antId in antsToRemove:
+            deadAnt: Ant = self.ants[antId]
+            self.log.info("Ant {} Killed !".format(deadAnt.antId))
+            deadAnt.fieldPosition.resetToEmpty()
             del self.ants[antId]
+        """ remove destroyed bases"""
+        basesToRemove: [str] = []
+        for (playerName, entity) in self.playerBases.items():
+            if entity.isDead(): basesToRemove.append(playerName)
+        for playerName in basesToRemove:
+            destroyedBase: Base = self.playerBases[playerName]
+            self.log.info("Base of player {} destroyed !".format(destroyedBase.player))
+            destroyedBase.fieldPosition.resetToEmpty()
+            del self.playerBases[playerName]
 
     def getAnt(self, antId: str) -> Ant or None:
         antId = str.lower(antId)
@@ -186,6 +200,12 @@ class gameBoard:
             self.log.error("No ant with id: {}".format(antId))
             return None
         return self.ants[antId]
+
+    def getBase(self, playerName: str) -> Base or None:
+        if playerName not in self.playerBases.keys():
+            self.log.error("Player {} has no base".format(playerName))
+            return None
+        return self.playerBases[playerName]
 
     def createFood(self, xpos: int, ypos: int, magnitude: int) -> bool:
         targetField = self.getField(xpos, ypos)
