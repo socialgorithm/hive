@@ -3,7 +3,7 @@ from main_package.fieldEntities.food import Food
 
 class Ant:
 
-    def __init__(self, antId: str, currentField: Field):
+    def __init__(self, antId: str):
         self.antId: str = antId
         self.health: int = 100  # how many hitpoints the ant can lose before death
         self._maxFoodCapacity: int = 6  # how much food the ant can carry
@@ -11,7 +11,7 @@ class Ant:
         self.attackDamage: int = 1  # the damage the ant inflicts per attack
         self._foodUptakeSpeed: int = 2  # how much food the ant acquires per feed action
         self.movementEfficiency: int = 2 # TODO how many fields the ant can move before using 1 food, not yet implemented
-        self.fieldPosition: Field = currentField
+        self.fieldPosition: Field = None
 
     def getFoodUptakeValue(self):
         """
@@ -29,7 +29,7 @@ class Ant:
         return obtainedFood > 0
 
     def doAttack(self, otherAnt: 'Ant'):
-        otherAnt.health -= self.attackDamage
+        otherAnt.health -= self.attackDamage  # TODO attackable interface for attacking bases
 
     def evaluateStatus(self) -> bool:
         """ updates ants status and applies status effects. Returns true if ant is still alive"""

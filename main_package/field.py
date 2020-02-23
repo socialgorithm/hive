@@ -2,6 +2,7 @@ from enum import Enum
 import logging
 import main_package.fieldEntities.ant as ant
 import main_package.fieldEntities.food as food
+import main_package.fieldEntities.base as base
 from colorama import init, Fore
 
 init()
@@ -32,19 +33,17 @@ class Field:
             return False
         if isinstance(entity, ant.Ant):
             self.type = FieldTypeEnum.ANT
-            self.entity = entity
-            entity.fieldPosition = self
-            self.log.info("Field ({},{}) set to type {}".format(self.xpos, self.ypos, self.type))
-            return True
         elif isinstance(entity, food.Food):
             self.type = FieldTypeEnum.FOOD
-            self.entity = entity
-            entity.fieldPosition = self
-            self.log.info("Field ({},{}) set to type {}".format(self.xpos, self.ypos, self.type))
-            return True
+        elif isinstance(entity, base.Base):
+            self.type = FieldTypeEnum.BASE
         else:
             self.log.error("Entity is of unknown type. Cannot set field type.")
             return False
+        self.entity = entity
+        entity.fieldPosition = self
+        self.log.info("Field ({},{}) set to type {}".format(self.xpos, self.ypos, self.type))
+        return True
 
     def __str__(self):
         return str(self.type.value)

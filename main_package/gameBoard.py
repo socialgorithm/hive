@@ -1,6 +1,7 @@
 from typing import Tuple, List
 from main_package.fieldEntities.ant import Ant
 from main_package.field import *
+from main_package.fieldEntities.base import Base
 from main_package.fieldEntities.food import Food
 logging.basicConfig(level=logging.INFO)
 
@@ -19,6 +20,9 @@ class gameBoard:
         self.ydim = ydim
         self.gameBoard = [[Field(xpos=x, ypos=y) for x in range(xdim)] for y in range(ydim)]
         self.ants: dict[str, Ant] = {}
+        self.playerBases = {}
+
+
 
     def createBase(self, xpos: int, ypos: int, player: str) -> bool:
         # the base cannot be right at the board edge or outside the board
@@ -33,8 +37,14 @@ class gameBoard:
             logging.error("Base cannot be placed on field that is not empty. Field is {}".format(field.type))
             return False
 
+        if player in self.playerBases.keys():
+            logging.error("Player " + player + " already has a base")
+            return False
+
         # placing base
-        field.type = FieldTypeEnum.BASE
+        base = Base(player)
+        field.setEntity(base)
+        self.playerBases[player] = base
         self.log.info("base for player {} created at coordinates ({},{})".format(player,xpos,ypos))
         return True
 
@@ -76,7 +86,9 @@ class gameBoard:
                 neighbours.append(neighbour)
         return neighbours
 
-    def createAnt(self, xpos: int, ypos: int, antId: str) -> bool:
+    def createAnt(self, xpos: int, ypos: int, antId: str, player: str) -> bool:
+
+        # TODO player can only create ants in sections visible to them
         # check if an ant with this id already exists
         antId = str.lower(antId)
         if self.getAnt(antId) is not None:
@@ -98,8 +110,14 @@ class gameBoard:
             self.log.error("Invalid Placement, field not empty")
             return False
 
+        # check if player owns base near which they want to place ant
+        base: Base = next(filter(lambda x: x.type == FieldTypeEnum.BASE, neighbouring_fields)).entity
+        if base.player != player:
+            self.log.error("Player {} does not own the adjacent base".format(player))
+            return False
+
         # set field to ant
-        self.ants[antId] = Ant(antId, placementDesitnation)
+        self.ants[antId] = Ant(antId)
         placementDesitnation.setEntity(self.ants[antId])
         self.log.info("Ant with id {} created at position ({},{})"
                       .format(antId, placementDesitnation.xpos, placementDesitnation.ypos))
