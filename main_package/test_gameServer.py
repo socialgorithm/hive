@@ -37,3 +37,49 @@ class TestServer(TestCase):
             self.assertTrue(args[0] == 'testPlayerB')
             self.assertTrue(args[1]['action'] == Actions.REGISTER_PLAYER_SUCCESS)
             self.assertTrue(args[1]['token'] is not None)
+
+    def testPlayerRequiresRegisteredNameAndToken(self):
+        with mock.patch.object(Server, 'outputToPlayer') as outputToPlayer:
+
+            # setup
+            jsonRegisterAction = {'action': Actions.REGISTER_PLAYER, 'data': {}, 'token': None}
+            someRandomAction = {'action': Actions.GAME_STATE, 'data': {}, 'token': None}
+            self.server.inputFromPlayer('playerA', json.dumps(jsonRegisterAction))
+            self.server.inputFromPlayer('playerB', json.dumps(jsonRegisterAction))
+            tokenA = outputToPlayer.call_args_list[0].args[1]['token']
+            tokenB = outputToPlayer.call_args_list[1].args[1]['token']
+
+            # player A uses tokenA
+            someRandomAction['token'] = tokenA
+            self.server.inputFromPlayer('playerA', json.dumps(someRandomAction))
+            args = outputToPlayer.call_args_list[2].args
+            self.assertTrue(args[0] == 'playerA')
+            self.assertTrue(args[1]['action'] == Actions.GAME_STATE)
+
+            # player B uses tokenB
+            someRandomAction['token'] = tokenB
+            self.server.inputFromPlayer('playerB', json.dumps(someRandomAction))
+            args = outputToPlayer.call_args_list[3].args
+            self.assertTrue(args[0] == 'playerB')
+            self.assertTrue(args[1]['action'] == Actions.GAME_STATE)
+
+            # player A uses tokenB
+            someRandomAction['token'] = tokenB
+            self.server.inputFromPlayer('playerA', json.dumps(someRandomAction))
+            args = outputToPlayer.call_args_list[4].args
+            self.assertTrue(args[0] == 'playerA')
+            self.assertTrue(args[1]['action'] == Actions.ERROR_INVALID_TOKEN)
+
+            # player A uses token None
+            someRandomAction['token'] = None
+            self.server.inputFromPlayer('playerA', json.dumps(someRandomAction))
+            args = outputToPlayer.call_args_list[5].args
+            self.assertTrue(args[0] == 'playerA')
+            self.assertTrue(args[1]['action'] == Actions.ERROR_INVALID_TOKEN)
+
+            # player C uses token A
+            someRandomAction['token'] = tokenA
+            self.server.inputFromPlayer('playerC', json.dumps(someRandomAction))
+            args = outputToPlayer.call_args_list[6].args
+            self.assertTrue(args[0] == 'playerC')
+            self.assertTrue(args[1]['action'] == Actions.ERROR_INVALID_PLAYER)
