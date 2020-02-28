@@ -120,7 +120,7 @@ class TestgameBoard(TestCase):
         self.assertTrue(board.attack("A", 0, 1))
         self.assertTrue(antB.health == 0)
         board.tick()
-        self.assertTrue(antBField.type == FieldTypeEnum.EMPTY)
+        self.assertTrue(antBField.type == FieldTypeEnum.GRASS)
         self.assertTrue(board.getAnt("B") is None)  # dead ants removed from board
 
         # test attacking and killing base
@@ -133,7 +133,7 @@ class TestgameBoard(TestCase):
         self.assertTrue(base.health == 5)
         self.assertTrue(board.attack("A", 1, 1))
         board.tick()
-        self.assertTrue(baseField.type == FieldTypeEnum.EMPTY)
+        self.assertTrue(baseField.type == FieldTypeEnum.GRASS)
         self.assertTrue(board.getBase("testPlayer") is None)
         base.health = 0
 
@@ -170,7 +170,7 @@ class TestgameBoard(TestCase):
         self.assertTrue(board.feed("C", 0, 3))
         self.assertFalse(board.feed("C", 0, 3))  # food source empty
         self.assertTrue(antC.currentFood == 5)
-        self.assertTrue(board.getField(0, 3).type == FieldTypeEnum.EMPTY)  # check food source depleation
+        self.assertTrue(board.getField(0, 3).type == FieldTypeEnum.GRASS)  # check food source depleation
 
     def test_getAntIdsOfPlayer(self):
         board = gameBoard(5, 5)

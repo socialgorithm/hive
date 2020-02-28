@@ -1,8 +1,8 @@
 from main_package.field import *
 from opensimplex import OpenSimplex
+from math import *
 
 class MapGenerator:
-    resolution = 5
     mapScale = 30 # bigger => softer land feature
     moistureScale = 70 # bigger => softer land feature
 
@@ -30,7 +30,7 @@ class MapGenerator:
         self.noiseGenerator = OpenSimplex()
         self.map = self.createMap()
 
-    def getTerrain(self, elevation: int, moisture: int) -> FieldTypeEnum:
+    def getTerrain(self, elevation: float, moisture: float) -> FieldTypeEnum:
         e = elevation * 100 # elevation [0, 100]
         m = moisture * 100  # moisture [0, 100]
 
@@ -56,24 +56,24 @@ class MapGenerator:
         return FieldTypeEnum.GRASS
 
     def createMap(self):
-        map = []
+        map = [0 for y in range(self.height)]
 
-        for x in range(self.width / self.resolution):
-            map[x] = []
+        for y in map:
+            map[y] = [0 for x in range(self.width)]
 
-            for y in range(self.height / self.resolution):
+            for x in map[y]:
                 elevationValue = self.getNoise(x, y, self.mapScale)
                 moistureValue = self.getNoise(x, y, self.moistureScale)
 
                 # Now use the noise values to determine the block type
                 terrainType = self.getTerrain(elevationValue, moistureValue)
 
-                map[x][y] = Field(xpos=x, ypos=y, type=terrainType)
+                map[y][x] = Field(xpos=x, ypos=y, type=terrainType)
 
         return map
 
     def getNoise(self, x: int, y: int, noiseScale: int):
-        return self.noiseGenerator.noise2D(
+        return self.noiseGenerator.noise2d(
             x = x / noiseScale,
             y = y / noiseScale
         ) / 2 + 0.5

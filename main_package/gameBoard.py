@@ -10,6 +10,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 class gameBoard:
+    resolution = 5
     log = logging.getLogger(__name__)
     validForAttack = [FieldTypeEnum.ANT, FieldTypeEnum.BASE]
 
