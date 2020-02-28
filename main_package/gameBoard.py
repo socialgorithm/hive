@@ -1,6 +1,7 @@
 from typing import Tuple, List, Set
 from main_package.fieldEntities.ant import Ant
 from main_package.field import *
+from main_package.mapGenerator import *
 from main_package.fieldEntities.base import Base
 from main_package.fieldEntities.food import Food
 from main_package.interfaces.attackable import Attackable
@@ -12,7 +13,7 @@ class gameBoard:
     log = logging.getLogger(__name__)
     validForAttack = [FieldTypeEnum.ANT, FieldTypeEnum.BASE]
 
-    def __init__(self, xdim: int = 10, ydim: int = 10):
+    def __init__(self, xdim: int = 50, ydim: int = 40):
         """
         Initializes an empty board of the given dimensions
         :param xdim: x dimension (exclusive)
@@ -20,7 +21,9 @@ class gameBoard:
         """
         self.xdim = xdim
         self.ydim = ydim
-        self.gameBoard = [[Field(xpos=x, ypos=y) for x in range(xdim)] for y in range(ydim)]
+
+        mapGen = MapGenerator(xdim, ydim)
+        self.gameBoard = mapGen.map
         self.ants: dict[str, Ant] = {}
         self.playerBases = {}
         self.players = []
@@ -49,8 +52,8 @@ class gameBoard:
 
         # field where base is placed must be empty
         field = self.getField(xpos, ypos)
-        if field.type != FieldTypeEnum.EMPTY:
-            logging.error("Base cannot be placed on field that is not empty. Field is {}".format(field.type))
+        if field.type != FieldTypeEnum.GRASS:
+            logging.error("Base cannot be placed on field that is not grass. Field is {}".format(field.type))
             return False
 
         if player in self.playerBases.keys():
@@ -130,8 +133,8 @@ class gameBoard:
         if not any(f.type == FieldTypeEnum.BASE for f in neighbouring_fields):
             self.log.error("Invalid Placement, no adjacent base")
             return False
-        elif placementDesitnation.type is not FieldTypeEnum.EMPTY:
-            self.log.error("Invalid Placement, field not empty")
+        elif placementDesitnation.type is not FieldTypeEnum.GRASS:
+            self.log.error("Invalid Placement, field not grass")
             return False
 
         # check if player owns base near which they want to place ant
@@ -156,7 +159,7 @@ class gameBoard:
         ant = self.ants[antId]
         # determine valid fields for movement
         fields = self.getNeighbouringFields(ant.fieldPosition)
-        validFields = filter(lambda x: x.type == FieldTypeEnum.EMPTY, fields)
+        validFields = filter(lambda x: x.type != FieldTypeEnum.ROCK, fields)
 
         # is movement valid ?
         fieldToMoveTo: Field = None
@@ -231,7 +234,7 @@ class gameBoard:
 
     def createFood(self, xpos: int, ypos: int, magnitude: int) -> bool:
         targetField = self.getField(xpos, ypos)
-        if targetField is None or targetField.type is not FieldTypeEnum.EMPTY:
+        if targetField is None or targetField.type is not FieldTypeEnum.GRASS:
             self.log.error("Invalid target ({},{}) for placing food.".format(xpos, ypos))
             return False
         if magnitude <= 0 or magnitude != magnitude:  # test for negative or nan

@@ -11,25 +11,34 @@ init()
 logging.basicConfig(level=logging.INFO)
 
 class FieldTypeEnum(Enum):
-    EMPTY = Fore.LIGHTBLACK_EX + "E"
     BASE = Fore.RED + "B"
     ANT = Fore.BLUE + "A"
     FOOD = Fore.GREEN + "F"
 
+    GRASS = Fore.LIGHTBLACK_EX + "g"
+    FOREST = Fore.LIGHTBLACK_EX + "F"
+    WATER = Fore.LIGHTBLACK_EX + "w"
+    DEEP_WATER = Fore.LIGHTBLACK_EX + "W"
+    ROCK = Fore.LIGHTBLACK_EX + "R"
+    SAND = Fore.LIGHTBLACK_EX + "S"
+    DRY_GRASS = Fore.LIGHTBLACK_EX + "D"
+    TALL_GRASS = Fore.LIGHTBLACK_EX + "G"
+    
 class Field:
     log = logging.getLogger(__name__)
 
-    def __init__(self, xpos:int, ypos:int):
+    def __init__(self, xpos:int, ypos:int, type: FieldTypeEnum):
         self.xpos = xpos
         self.ypos = ypos
-        self.type = FieldTypeEnum.EMPTY
+        self.emptyType = type
+        self.type = type
         self.entity = None
 
     def getPos(self) -> Tuple[int, int]:
         return self.xpos, self.ypos
 
     def resetToEmpty(self):
-        self.type = FieldTypeEnum.EMPTY
+        self.type = self.emptyType
         self.entity = None
 
     def setEntity(self, entity) -> bool:
