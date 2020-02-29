@@ -1,4 +1,4 @@
-from main_package.field import *
+from .field import Field, FieldType
 from opensimplex import OpenSimplex
 
 class MapGenerator:
@@ -30,30 +30,30 @@ class MapGenerator:
         self.noiseGenerator = OpenSimplex()
         self.map = self.createMap()
 
-    def getTerrain(self, elevation: int, moisture: int) -> FieldTypeEnum:
+    def getTerrain(self, elevation: int, moisture: int) -> FieldType:
         e = elevation * 100 # elevation [0, 100]
         m = moisture * 100  # moisture [0, 100]
 
         if (e < self.waterMaxElevation / 3):
-            return FieldTypeEnum.DEEP_WATER
+            return FieldType.DEEP_WATER
         if (e < self.waterMaxElevation):
-            return FieldTypeEnum.WATER
+            return FieldType.WATER
         if (e < self.waterMaxElevation + self.sandMaxElevation):
-            return FieldTypeEnum.SAND
+            return FieldType.SAND
 
         if (e > self.rockMinElevation):
-            return FieldTypeEnum.ROCK
+            return FieldType.ROCK
         if (e > self.rockMinElevation - self.sandMaxElevation):
-            return FieldTypeEnum.TALL_GRASS
+            return FieldType.TALL_GRASS
 
         if (m < self.grassMinMoisture):
-            return FieldTypeEnum.DRY_GRASS
+            return FieldType.DRY_GRASS
         if (e < self.forestMaxElevation and m > self.forestMinMoisture and m < self.forestMaxMoisture):
-            return FieldTypeEnum.FOREST
+            return FieldType.FOREST
         if (e > self.tallGrassMinElevation and m > self.tallGrassMinMoisture):
-            return FieldTypeEnum.TALL_GRASS
+            return FieldType.TALL_GRASS
 
-        return FieldTypeEnum.GRASS
+        return FieldType.GRASS
 
     def createMap(self):
         map = []

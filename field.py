@@ -2,15 +2,13 @@ from enum import Enum
 import logging
 from typing import Tuple
 
-import main_package.fieldEntities.ant as ant
-import main_package.fieldEntities.food as food
-import main_package.fieldEntities.base as base
+from hive import Ant, Base, Food
 from colorama import init, Fore
 
 init()
 logging.basicConfig(level=logging.INFO)
 
-class FieldTypeEnum(Enum):
+class FieldType(Enum):
     BASE = Fore.RED + "B"
     ANT = Fore.BLUE + "A"
     FOOD = Fore.GREEN + "F"
@@ -27,7 +25,7 @@ class FieldTypeEnum(Enum):
 class Field:
     log = logging.getLogger(__name__)
 
-    def __init__(self, xpos:int, ypos:int, type: FieldTypeEnum):
+    def __init__(self, xpos:int, ypos:int, type: FieldType):
         self.xpos = xpos
         self.ypos = ypos
         self.emptyType = type
@@ -45,12 +43,12 @@ class Field:
         if self.entity is not None:
             self.log.error("Cannot set entity on field that is {} instead of empty".format(self.type))
             return False
-        if isinstance(entity, ant.Ant):
-            self.type = FieldTypeEnum.ANT
-        elif isinstance(entity, food.Food):
-            self.type = FieldTypeEnum.FOOD
-        elif isinstance(entity, base.Base):
-            self.type = FieldTypeEnum.BASE
+        if isinstance(entity, Ant):
+            self.type = FieldType.ANT
+        elif isinstance(entity, Food):
+            self.type = FieldType.FOOD
+        elif isinstance(entity, Base):
+            self.type = FieldType.BASE
         else:
             self.log.error("Entity is of unknown type. Cannot set field type.")
             return False

@@ -1,8 +1,7 @@
 import json
 import uuid
 
-from main_package.actions import Actions
-
+from .actions import Actions
 
 class Server:
 

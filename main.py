@@ -1,7 +1,7 @@
-from main_package.gameBoard import gameBoard
+from .world import GameBoard
 import sys
 
 if __name__ == '__main__':
     print(sys.path)
-    server = gameBoard()
+    server = GameBoard()
     print(server.getBoardString())

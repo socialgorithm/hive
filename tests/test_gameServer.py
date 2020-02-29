@@ -1,13 +1,7 @@
 import json
 from unittest import TestCase, mock
 
-from main_package.actions import Actions
-from main_package.gameBoard import gameBoard
-from main_package.fieldEntities.ant import Ant
-from main_package.field import FieldTypeEnum
-from main_package.fieldEntities.food import Food
-from main_package.gameServer import Server
-
+from hive import Actions, Ant, Food, Field, FieldType, GameBoard, Server
 
 class TestServer(TestCase):
 

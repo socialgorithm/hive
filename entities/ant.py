@@ -1,7 +1,5 @@
-import main_package.field as field
-from main_package.fieldEntities.food import Food
-from main_package.interfaces.attackable import Attackable
-
+from .attackable import Attackable
+from .food import Food
 
 class Ant(Attackable):
 
@@ -14,7 +12,6 @@ class Ant(Attackable):
         self.attackDamage: int = 1  # the damage the ant inflicts per attack
         self._foodUptakeSpeed: int = 2  # how much food the ant acquires per feed action
         self.movementEfficiency: int = 2 # TODO how many fields the ant can move before using 1 food, not yet implemented
-        self.fieldPosition: field.Field = None
 
     def getFoodUptakeValue(self):
         """

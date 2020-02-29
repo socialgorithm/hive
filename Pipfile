@@ -9,6 +9,7 @@ pytest = "*"
 [packages]
 opensimplex = "*"
 colorama = "*"
+atomicwrites = "*"
 
 [requires]
 python_version = "3.8"

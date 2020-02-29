@@ -1,18 +1,13 @@
 from typing import List
 from unittest import TestCase
 
-from main_package.fieldEntities.base import Base
-from main_package.gameBoard import gameBoard
-from main_package.fieldEntities.ant import Ant
-from main_package.field import FieldTypeEnum, Field
-from main_package.fieldEntities.food import Food
+from hive import Ant, Base, Food, FieldType, Field, GameBoard
 
-
-class TestgameBoard(TestCase):
+class TestGameBoard(TestCase):
 
     def test_fogOfWar(self):
         # setup
-        board = gameBoard(6, 6)
+        board = GameBoard(6, 6)
         board.createBase(1,1,"player1")
         board.createBase(4,4,"player2")
         board.createAnt(2,1,"a","player1")
@@ -45,7 +40,7 @@ class TestgameBoard(TestCase):
         self.assertTrue(all(visible.getPos() in expectedVisibleFieldsP1 for visible in visibleFieldsP1))
 
     def test_ant_creation(self):
-        board = gameBoard(10, 10)
+        board = GameBoard(10, 10)
         board.createBase(2, 2, "testPlayer")
         # cant create ant with invalid player name
         self.assertFalse(board.createAnt(1, 1, "someAnt", "otherPlayer"))
@@ -60,7 +55,7 @@ class TestgameBoard(TestCase):
         self.assertFalse(board.createAnt(1, 2, "A", "testPlayer"))
 
     def test_base_creation(self):
-        board = gameBoard(10, 10)
+        board = GameBoard(10, 10)
         self.assertTrue(board.createBase(2, 2, "testPlayer"))
         self.assertFalse(board.createBase(2, 2, "testPlayer2"))  # base already exists at same coords
         self.assertFalse(board.createBase(15, 15, "testPlayer3"))  # outside board
@@ -68,7 +63,7 @@ class TestgameBoard(TestCase):
         self.assertFalse(board.createBase(3, 3, "testPlayer"))  # valid coords but 'testPlayer' already has a base
 
     def test_get_neighbouring_field_coordinates(self):
-        board = gameBoard(3, 3)
+        board = GameBoard(3, 3)
         coords = board.getNeighbouringFieldCoordinates(1, 1)  # middle of board
         self.assertTrue(len(coords) == 8)
         for coordinate in [(0, 0), (0, 1), (0, 2), (0, 1), (2, 1), (0, 2), (1, 2), (2, 2)]:
@@ -80,7 +75,7 @@ class TestgameBoard(TestCase):
             self.assertTrue(coordinate in coords)
 
     def test_ant_movement(self):
-        board = gameBoard(4, 4)
+        board = GameBoard(4, 4)
         board.createBase(1, 1, "testPlayer")
         board.createAnt(0, 0, "A", "testPlayer")
         board.createAnt(0, 1, "B", "testPlayer")
@@ -95,7 +90,7 @@ class TestgameBoard(TestCase):
         self.assertFalse(board.moveAnt("C", 1, 3))  # moving ant that does not exist
 
     def test_ant_attack(self):
-        board = gameBoard(3, 3)
+        board = GameBoard(3, 3)
         board.createBase(1, 1, "testPlayer")
         board.createAnt(0, 0, "A", "testPlayer")
         board.createAnt(0, 1, "B", "testPlayer")
@@ -110,36 +105,36 @@ class TestgameBoard(TestCase):
         antA.attackDamage = 5
         antB: Ant = board.getAnt("B")
         antBField = antB.fieldPosition
-        self.assertTrue(antBField.type == FieldTypeEnum.ANT)
+        self.assertTrue(antBField.type == FieldType.ANT)
         antB.health = 10
         self.assertTrue(board.attack("A", 0, 1))
         self.assertTrue(antB.health == 5)
         board.tick()
-        self.assertTrue(antBField.type == FieldTypeEnum.ANT)
+        self.assertTrue(antBField.type == FieldType.ANT)
         self.assertTrue(board.getAnt("B") is not None)  # ant C damaged but alive
         self.assertTrue(board.attack("A", 0, 1))
         self.assertTrue(antB.health == 0)
         board.tick()
-        self.assertTrue(antBField.type == FieldTypeEnum.EMPTY)
+        self.assertTrue(antBField.type == FieldType.EMPTY)
         self.assertTrue(board.getAnt("B") is None)  # dead ants removed from board
 
         # test attacking and killing base
         base: Base = board.getBase("testPlayer")
         baseField = base.fieldPosition
-        self.assertTrue(baseField.type == FieldTypeEnum.BASE)
+        self.assertTrue(baseField.type == FieldType.BASE)
         base.health = 10
         self.assertTrue(board.attack("A", 1, 1))
         board.tick()
         self.assertTrue(base.health == 5)
         self.assertTrue(board.attack("A", 1, 1))
         board.tick()
-        self.assertTrue(baseField.type == FieldTypeEnum.EMPTY)
+        self.assertTrue(baseField.type == FieldType.EMPTY)
         self.assertTrue(board.getBase("testPlayer") is None)
         base.health = 0
 
 
     def test_ant_feed(self):
-        board = gameBoard(5, 5)
+        board = GameBoard(5, 5)
         board.createBase(1, 1, "testPlayer")
         board.createAnt(0, 1, "A", "testPlayer")
         antA: Ant = board.getAnt("A")
@@ -148,7 +143,7 @@ class TestgameBoard(TestCase):
         antC: Ant = board.getAnt("C")
         antB: Ant = board.getAnt("B")
         self.assertTrue(board.createFood(0, 3, 11))
-        self.assertTrue(board.getField(0, 3).type == FieldTypeEnum.FOOD)
+        self.assertTrue(board.getField(0, 3).type == FieldType.FOOD)
         # feeding out of range
         food: Food = board.getField(0, 3).entity
         self.assertFalse(board.feed("A", 0, 3))
@@ -170,10 +165,10 @@ class TestgameBoard(TestCase):
         self.assertTrue(board.feed("C", 0, 3))
         self.assertFalse(board.feed("C", 0, 3))  # food source empty
         self.assertTrue(antC.currentFood == 5)
-        self.assertTrue(board.getField(0, 3).type == FieldTypeEnum.EMPTY)  # check food source depleation
+        self.assertTrue(board.getField(0, 3).type == FieldType.EMPTY)  # check food source depleation
 
     def test_getAntIdsOfPlayer(self):
-        board = gameBoard(5, 5)
+        board = GameBoard(5, 5)
         board.createBase(1, 1, "player1")
         board.createAnt(0, 1, "a1", "player1")
         board.createAnt(0, 0, "a2", "player1")

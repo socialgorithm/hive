@@ -1,17 +1,16 @@
 from typing import Tuple, List, Set
-from main_package.fieldEntities.ant import Ant
-from main_package.field import *
-from main_package.mapGenerator import *
-from main_package.fieldEntities.base import Base
-from main_package.fieldEntities.food import Food
-from main_package.interfaces.attackable import Attackable
+from hive.entities import Attackable, Ant, Base, Food
+from .field import Field, FieldType
+from .mapGenerator import MapGenerator
+
+import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
-class gameBoard:
+class GameBoard:
     log = logging.getLogger(__name__)
-    validForAttack = [FieldTypeEnum.ANT, FieldTypeEnum.BASE]
+    validForAttack = [FieldType.ANT, FieldType.BASE]
 
     def __init__(self, xdim: int = 50, ydim: int = 40):
         """
@@ -52,7 +51,7 @@ class gameBoard:
 
         # field where base is placed must be empty
         field = self.getField(xpos, ypos)
-        if field.type != FieldTypeEnum.GRASS:
+        if field.type != FieldType.GRASS:
             logging.error("Base cannot be placed on field that is not grass. Field is {}".format(field.type))
             return False
 
@@ -130,15 +129,15 @@ class gameBoard:
         # placement checks
         placementDesitnation: Field = self.getField(xpos, ypos)
         neighbouring_fields: List[Field] = self.getNeighbouringFields(placementDesitnation)
-        if not any(f.type == FieldTypeEnum.BASE for f in neighbouring_fields):
+        if not any(f.type == FieldType.BASE for f in neighbouring_fields):
             self.log.error("Invalid Placement, no adjacent base")
             return False
-        elif placementDesitnation.type is not FieldTypeEnum.GRASS:
+        elif placementDesitnation.type is not FieldType.GRASS:
             self.log.error("Invalid Placement, field not grass")
             return False
 
         # check if player owns base near which they want to place ant
-        base: Base = next(filter(lambda x: x.type == FieldTypeEnum.BASE, neighbouring_fields)).entity
+        base: Base = next(filter(lambda x: x.type == FieldType.BASE, neighbouring_fields)).entity
         if base.player != player:
             self.log.error("Player {} does not own the adjacent base".format(player))
             return False
@@ -159,7 +158,7 @@ class gameBoard:
         ant = self.ants[antId]
         # determine valid fields for movement
         fields = self.getNeighbouringFields(ant.fieldPosition)
-        validFields = filter(lambda x: x.type != FieldTypeEnum.ROCK, fields)
+        validFields = filter(lambda x: x.type != FieldType.ROCK, fields)
 
         # is movement valid ?
         fieldToMoveTo: Field = None
@@ -192,7 +191,7 @@ class gameBoard:
         if fieldToAttack not in neighbouringFields:
             self.log.error("The field {} is not in range of ant {}".format((xpos, ypos), antId))
             return False
-        if fieldToAttack.type not in gameBoard.validForAttack:
+        if fieldToAttack.type not in GameBoard.validForAttack:
             self.log.error("The field {} is not a valid attack target for ant {}".format((xpos, ypos), antId))
             return False
         target: Attackable = fieldToAttack.entity  # TODO: might need "attackable" interface later
@@ -234,7 +233,7 @@ class gameBoard:
 
     def createFood(self, xpos: int, ypos: int, magnitude: int) -> bool:
         targetField = self.getField(xpos, ypos)
-        if targetField is None or targetField.type is not FieldTypeEnum.GRASS:
+        if targetField is None or targetField.type is not FieldType.GRASS:
             self.log.error("Invalid target ({},{}) for placing food.".format(xpos, ypos))
             return False
         if magnitude <= 0 or magnitude != magnitude:  # test for negative or nan
@@ -256,7 +255,7 @@ class gameBoard:
             self.log.error("Ant with id {} is not in range of targeted field ({},{})".format(antId, targetXpos, targetYpos))
             return False
         # check if field is food
-        if targetField.type != FieldTypeEnum.FOOD:
+        if targetField.type != FieldType.FOOD:
             self.log.error("Ant with id {} tried to feed on a non food field ({},{})".format(antId,targetXpos,targetYpos))
             return False
         # ants have a food capacity and feeding speed value
