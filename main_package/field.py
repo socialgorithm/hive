@@ -7,8 +7,11 @@ import main_package.fieldEntities.food as food
 import main_package.fieldEntities.base as base
 from colorama import init, Fore
 
+from main_package.interfaces.Entity import Entity, EntityType
+
 init()
 logging.basicConfig(level=logging.INFO)
+
 
 class FieldTypeEnum(Enum):
     EMPTY = Fore.LIGHTBLACK_EX + "E"
@@ -16,14 +19,15 @@ class FieldTypeEnum(Enum):
     ANT = Fore.BLUE + "A"
     FOOD = Fore.GREEN + "F"
 
+
 class Field:
     log = logging.getLogger(__name__)
 
-    def __init__(self, xpos:int, ypos:int):
+    def __init__(self, xpos: int, ypos: int):
         self.xpos = xpos
         self.ypos = ypos
         self.type = FieldTypeEnum.EMPTY
-        self.entity = None
+        self.entity: Entity = None
 
     def getPos(self) -> Tuple[int, int]:
         return self.xpos, self.ypos
@@ -32,15 +36,15 @@ class Field:
         self.type = FieldTypeEnum.EMPTY
         self.entity = None
 
-    def setEntity(self, entity) -> bool:
+    def setEntity(self, entity: Entity) -> bool:
         if self.entity is not None:
             self.log.error("Cannot set entity on field that is {} instead of empty".format(self.type))
             return False
-        if isinstance(entity, ant.Ant):
+        if entity.getEntityType() == EntityType.ANT:
             self.type = FieldTypeEnum.ANT
-        elif isinstance(entity, food.Food):
+        elif entity.getEntityType() == EntityType.FOOD:
             self.type = FieldTypeEnum.FOOD
-        elif isinstance(entity, base.Base):
+        elif entity.getEntityType() == EntityType.BASE:
             self.type = FieldTypeEnum.BASE
         else:
             self.log.error("Entity is of unknown type. Cannot set field type.")

@@ -9,6 +9,58 @@ from main_package.fieldEntities.food import Food
 
 
 class TestgameBoard(TestCase):
+    """
+              0   1   2   3   4   5
+            -------------------------
+        0   |   |   |a2 |   |   |   |
+            -------------------------
+        1   |   |P1 |   |b1 |P2 |b2 |
+            -------------------------
+        2   |a1 |   | F |   |   |   |
+            -------------------------
+        3   |   |   |   |c1 |   |   |
+            -------------------------
+        4   |   |   |   |   |P3 |   |
+            -------------------------
+        5   |   |   |   |   |   |   |
+            """
+
+    def test_getPlayerGameState_eachPlayerOnlySeesTheirStuff(self):
+        # setup
+        board = gameBoard(6, 6)
+        board.createBase(1, 1, "player1")
+        board.createBase(4, 1, "player2")
+        board.createBase(4, 4, "player3")
+        board.createAnt(0, 2, "a1", "player1")
+        board.createAnt(2, 0, "a2", "player1")
+        board.createAnt(3, 1, "b1", "player2")
+        board.createAnt(5, 1, "b2", "player2")
+        board.createAnt(3, 3, "c1", "player3")
+        board.createFood(2, 2, 59)
+
+        statePlayer1 = board.getPlayerGameState("player1")
+        statePlayer2 = board.getPlayerGameState("player2")
+        statePlayer3 = board.getPlayerGameState("player3")
+
+        # player1 sees some of player2's assets & food, but nothing from player 3
+        self.assertTrue(all(elem in statePlayer1["visibleEntities"]["ants"].keys() for elem in ["a1", "a2"]))
+        self.assertTrue(all(elem in statePlayer1["visibleEntities"]["ants"].keys() for elem in ["b1"]))
+        self.assertTrue(not any(elem in statePlayer1["visibleEntities"]["ants"].keys() for elem in ["c1", "b2"]))
+        self.assertTrue(len(statePlayer1["visibleEntities"]["food"].keys()) == 1)
+        self.assertTrue(statePlayer1["visibleEntities"]["food"][next(iter(statePlayer1["visibleEntities"]["food"]))]["quantity"] == 59)
+
+        # player2 sees some of player1's assets & food, but nothing from player 3
+        self.assertTrue(all(elem in statePlayer2["visibleEntities"]["ants"].keys() for elem in ["b1", "b2", "a2"]))
+        self.assertTrue(not any(elem in statePlayer2["visibleEntities"]["ants"].keys() for elem in ["c1", "a1"]))
+        self.assertTrue(len(statePlayer2["visibleEntities"]["food"].keys()) == 1)
+        self.assertTrue(statePlayer2["visibleEntities"]["food"][next(iter(statePlayer2["visibleEntities"]["food"]))][
+                            "quantity"] == 59)
+
+        # player 1 sees detail about own ants but not about the ants of other players
+        self.assertTrue(len(statePlayer1["visibleEntities"]["ants"]["a1"]["detailedInfo"].keys()) > 0)
+        self.assertTrue(len(statePlayer1["visibleEntities"]["ants"]["a2"]["detailedInfo"].keys()) > 0)
+        self.assertTrue(len(statePlayer1["visibleEntities"]["ants"]["b1"]["detailedInfo"].keys()) == 0)
+
 
     def test_fogOfWar(self):
         # setup

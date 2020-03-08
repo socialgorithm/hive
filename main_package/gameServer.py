@@ -9,8 +9,12 @@ class Server:
     def __init__(self):
         self.registeredPlayers = {}
 
+    def gameLoop(self, action):
+        pass
+
     def inputFromPlayer(self, playerName: str, actionJson: str):
         action = json.loads(actionJson)
+
         # actions which do not require a token
         if action['action'] == Actions.REGISTER_PLAYER:
             # ensure that player is not already registered
@@ -30,16 +34,13 @@ class Server:
             response = {'action': Actions.ERROR_INVALID_PLAYER, 'data': {}, 'token': None}
             self.outputToPlayer(playerName, response)
             return
+
         elif action['token'] != self.registeredPlayers[playerName]:
             response = {'action': Actions.ERROR_INVALID_TOKEN, 'data': {}, 'token': None}
             self.outputToPlayer(playerName, response)
             return
 
-        # other actions
-        if action['action'] == Actions.GAME_STATE:
-            response = {'action': Actions.GAME_STATE, 'data': {}, 'token': None}
-            self.outputToPlayer(playerName,response)
-            return
+        self.gameLoop(action)  # pass action to game loop
 
     def outputToPlayer(self, playerName: str, boardStateJson: json):
         pass

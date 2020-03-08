@@ -38,7 +38,48 @@ class gameBoard:
         base: Base = self.getBase(playerName)
         visibleFields += self.getNeighbouringFields(base.fieldPosition)
         visibleFields.append(base.fieldPosition)
-        return list(set(visibleFields))
+        return list(set(visibleFields))  # eliminate duplicates
+
+    def getPlayerGameState(self, playerName) -> dict:
+        gameState = {"visibleFields": []}
+        for field in self.getVisibleFields(playerName):
+            fieldData = {"position": field.getPos(),
+                         "type": field.type.name,
+                         "occupyingEntityId": field.entity.getId() if field.entity is not None else ""}
+            gameState["visibleFields"].append(fieldData)
+        gameState["visibleEntities"] = {"ants": {}, "food": {}, "bases": {}}
+        for entity in self.getVisibleEntities(playerName):
+            if entity.getEntityType() == EntityType.BASE:
+                baseEntity: Base = entity
+                gameState["visibleEntities"]["bases"][baseEntity.getId()] = {
+                    "owner": baseEntity.getOwner(),
+                    "health": baseEntity.getRemainingHealth()
+                }
+            if entity.getEntityType() == EntityType.FOOD:
+                foodEntity: Food = entity
+                gameState["visibleEntities"]["food"][foodEntity.getId()] = {
+                    "quantity": foodEntity.getRemainingFoodQuantity()
+                }
+            if entity.getEntityType() == EntityType.ANT:
+                antEntity: Ant = entity
+                # if the player owns the ant provide extra information
+                detailedInfo = {}
+                if antEntity.getOwner() == playerName:
+                    detailedInfo = antEntity.getAntDetailedInfo()
+                gameState["visibleEntities"]["ants"][antEntity.getId()] = {
+                    "owner": antEntity.getOwner(),
+                    "health": antEntity.getRemainingHealth(),
+                    "detailedInfo": detailedInfo
+                }
+        return gameState
+
+    def getVisibleEntities(self, playerName) -> List[Entity]:
+        visibleFields = self.getVisibleFields(playerName)
+        visibleEntities = []
+        for field in visibleFields:
+            if field.entity is not None:
+                visibleEntities.append(field.entity)
+        return visibleEntities
 
     def createBase(self, xpos: int, ypos: int, player: str) -> bool:
         # the base cannot be right at the board edge or outside the board
@@ -108,7 +149,7 @@ class gameBoard:
             self.log.error("Player {} is not a valid player".format(playerName))
             return None
         playersAnts = list(filter(lambda ant: ant.playerName == playerName, self.ants.values()))
-        return list(map(lambda ant: ant.antId, playersAnts))
+        return list(map(lambda ant: ant.getId(), playersAnts))
 
     def createAnt(self, xpos: int, ypos: int, antId: str, player: str) -> bool:
 
