@@ -56,19 +56,22 @@ class MapGenerator:
         return FieldTypeEnum.GRASS
 
     def createMap(self):
-        map = [0 for y in range(self.height)]
+        map = []
 
-        for y in map:
-            map[y] = [0 for x in range(self.width)]
-
-            for x in map[y]:
+        for y in range(0, self.height):
+            col = []
+            for x in range(0, self.width):
                 elevationValue = self.getNoise(x, y, self.mapScale)
                 moistureValue = self.getNoise(x, y, self.moistureScale)
 
                 # Now use the noise values to determine the block type
                 terrainType = self.getTerrain(elevationValue, moistureValue)
 
-                map[y][x] = Field(xpos=x, ypos=y, type=terrainType)
+                col.append(
+                    Field(xpos=x, ypos=y, type=terrainType)
+                )
+            
+            map.append(col)
 
         return map
 
