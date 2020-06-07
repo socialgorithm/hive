@@ -14,15 +14,10 @@ def step_impl(context, url, port):
     context.server = Server(url, port)
 
 
-@step("the client connects to {url}")
-def step_impl(context, url):
-    context.client = SockClient(url)
-
-
-@given('entity "{player}" connects to "{url}"')
-def step_impl(context, player, url):
+@given('entity "{entity}" connects to "{url}"')
+def step_impl(context, entity, url):
     try:
-        context.playerToSocket[player] = SockClient(url)
+        setattr(context, entity, SockClient(url))
     except:
         logger.log(logging.INFO, 'Connection refused')
 
@@ -37,3 +32,11 @@ def step_impl(context, playerToken):
 def step_impl(context, num):
     print(context.server.playerToSocket)
     assert (len(context.server.playerToSocket) == num)
+
+
+@then('entity "{entity}" has field "{field}" with value "{value}"')
+def step_impl(context,entity,field,value):
+    print(context.tournamentServer)
+    entity = getattr(context,entity)
+    entityField = getattr(entity,field)
+    assert(entityField == value)

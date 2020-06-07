@@ -5,7 +5,7 @@ import socketio
 import eventlet
 
 
-class Server(socketio.Namespace,threading.Thread):
+class Server(threading.Thread):
 
     logger = logging.getLogger('Server')
     gameInfo = "Hive Game!"
@@ -15,13 +15,13 @@ class Server(socketio.Namespace,threading.Thread):
         self.sio = socketio.Server()
         self.app = socketio.WSGIApp(self.sio)
         self.playerToSocket = {}
-        self.tournamentServerSessionId = "";
+        self.tournamentServerSessionId = ""
         self.sio.on('connect', self.connect)
         self.sio.on('disconnect', self.disconnect)
         self.sio.on('CreateMatch', self.createMatch)
 
         # thread
-        self.thread : threading.Thread = threading.Thread(target=self.startServer, args=(self.app, url, port))
+        self.thread: threading.Thread = threading.Thread(target=self.startServer, args=(self.app, url, port))
         self.thread.daemon = True
         self.thread.start()
 
@@ -35,16 +35,19 @@ class Server(socketio.Namespace,threading.Thread):
     def connect(self, sid, environ):
 
         # extracting player token and creating mapping: token -> session id
+        token = None
         try:
             token = parse.parse_qs(environ['QUERY_STRING'])['token'][0]
         except KeyError:
             message = "Failed to get token from query string {query}. sid:{sid}, assuming its the tournament server".format(sid=sid, query=environ['QUERY_STRING'])
-            logging.log(level=logging.WARN, msg=message)
+            print(message)
 
         if token is not None:
+            print("Client is player, token:{}".format(token))
             self.playerToSocket[token] = sid
             self.onPlayerConnected(sid)
         else:
+            print("client is tournament server")
             self.onTournamentServerConnected(sid)
 
     def disconnect(self, sid):
@@ -54,6 +57,7 @@ class Server(socketio.Namespace,threading.Thread):
         pass
 
     def onTournamentServerConnected(self, sid):
+        print("sending game info: {}".format(self.gameInfo))
         self.tournamentServerSessionId = sid
         self.sio.emit(event="GameInfo", data=self.gameInfo, to=sid)
 
